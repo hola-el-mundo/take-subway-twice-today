@@ -3,75 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zoe's Fun House! 🎈</title>
-    <!-- 引入有趣的圆润字体 -->
+    <title>Zoe's World 🌏</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;500;700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
-    
-    <!-- 引入样式 -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    
-    <!-- 全屏主视觉区域 (Hero Section) -->
-    <main class="hero-section">
-        <div class="hero-content">
-            <div class="badge">👋 Hello there!</div>
-            <h1 class="hero-title">Hey, I'm <span class="highlight">Zoe!</span></h1>
-            <p class="hero-subtitle">Creating fun stuff & breaking things on web.</p>
-            <div class="social-links">
-                <a href="#" class="social-btn instagram">📸 Insta</a>
-                <a href="#" class="social-btn twitter">🐦 Twitter</a>
-                <a href="#" class="social-btn email">📧 Email</a>
-            </div>
-        </div>
-        
-        <!-- 背景装饰元素 (Blobs) -->
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="blob blob-3"></div>
-        <div class="sticker sticker-1">✨</div>
-        <div class="sticker sticker-2">🚀</div>
-    </main>
 
-    <!-- 侧边博客入口：像个扭蛋或者糖果 -->
-    <div class="corner-trigger" id="blog-toggle">
-        <span class="emoji">📖</span>
-        <span class="trigger-text">My Diary</span>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="profile">
+                <h1>Zoe's Space</h1>
+                <p>Welcome!</p>
+            </div>
+            <nav>
+                <button class="nav-btn active" data-target="home">🏠 Home</button>
+                <button class="nav-btn" data-target="blog">📝 Blog</button>
+                <button class="nav-btn" data-target="guestbook">💬 Guestbook</button>
+                <button class="nav-btn" data-target="visitors">👀 Visitors</button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content-area">
+            
+            <!-- HOME Section -->
+            <section id="home" class="view-section active">
+                <div class="hero-card">
+                    <h1 class="hero-title">Hi, I'm <span class="highlight">Zoe!</span></h1>
+                    <p class="hero-subtitle">Creating fun stuff on the web.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-chip">📸 Instagram</a>
+                        <a href="#" class="social-chip">🐦 Twitter</a>
+                        <a href="#" class="social-chip">📧 Email</a>
+                    </div>
+                </div>
+                <!-- Blobs for decoration -->
+                <div class="blob blob-1"></div>
+                <div class="blob blob-2"></div>
+            </section>
+
+            <!-- BLOG Section -->
+            <section id="blog" class="view-section">
+                <div class="section-header">
+                    <h2>My Thoughts</h2>
+                    <button id="new-post-btn" class="action-btn primary">+ New Post</button>
+                </div>
+                
+                <!-- Editor (Hidden by default) -->
+                <div id="editor-area" class="card-style hidden">
+                    <input type="text" id="blog-title" placeholder="Title..." class="fun-input">
+                    <textarea id="blog-content" placeholder="What's on your mind?" class="fun-textarea" rows="5"></textarea>
+                    <div class="editor-buttons">
+                        <button id="publish-btn" class="action-btn primary">Publish</button>
+                        <button id="cancel-btn" class="action-btn secondary">Cancel</button>
+                    </div>
+                </div>
+
+                <div id="blog-list" class="blog-container">
+                    <!-- Blogs will be loaded here -->
+                </div>
+            </section>
+
+            <!-- GUESTBOOK Section -->
+            <section id="guestbook" class="view-section">
+                <div class="section-header">
+                    <h2>Guestbook</h2>
+                </div>
+                
+                <div class="guestbook-form card-style">
+                    <input type="text" id="guest-name" placeholder="Your Nickname" class="fun-input">
+                    <textarea id="guest-msg" placeholder="Leave a message..." class="fun-textarea" rows="2"></textarea>
+                    <button id="send-msg-btn" class="action-btn primary">Send Message</button>
+                </div>
+
+                <div id="guestbook-list" class="message-list">
+                    <!-- Messages here -->
+                </div>
+            </section>
+
+            <!-- VISITORS Section -->
+            <section id="visitors" class="view-section">
+                <div class="section-header">
+                    <h2>Who Visited?</h2>
+                </div>
+                <div class="section-intro">
+                    <p>Spying on my visitors... (Logged IPs)</p>
+                </div>
+
+                <div class="card-style">
+                    <table class="visitors-table">
+                        <thead>
+                            <tr>
+                                <th>IP Address</th>
+                                <th>Time</th>
+                                <th>Agent</th>
+                            </tr>
+                        </thead>
+                        <tbody id="visitors-list">
+                            <!-- Visitor rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
     </div>
 
-    <!-- 隐藏的侧边博客面板 -->
-    <aside class="blog-panel" id="blog-panel">
-        <button class="close-btn" id="close-blog">✖️</button>
-        
-        <div class="blog-container">
-            <header class="blog-header">
-                <h2>📒 Little Notebook</h2>
-                <button id="new-post-btn" class="fun-btn">✍️ Write New</button>
-            </header>
-
-            <!-- 写作区域 -->
-            <div id="editor-area" class="editor-area hidden card-style">
-                <input type="text" id="blog-title" placeholder="Today's headlines..." class="fun-input">
-                <textarea id="blog-content" placeholder="What's happening? Tell me everything!" class="fun-textarea"></textarea>
-                <div class="editor-actions">
-                    <button id="publish-btn" class="action-btn primary">Post it!</button>
-                    <button id="cancel-btn" class="action-btn secondary">Nah</button>
-                </div>
-            </div>
-
-            <!-- 列表区域 -->
-            <div id="blog-list" class="blog-list">
-                <!-- 动态生成 -->
-            </div>
-        </div>
-    </aside>
-
-    <!-- 遮罩层 -->
-    <div class="overlay" id="overlay"></div>
-
-    <!-- 脚本引入 -->
-    <script type="module" src="js/script.js"></script>
+    <script src="js/script.js"></script>
 </body>
 </html>
