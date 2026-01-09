@@ -1,35 +1,77 @@
 /**
+ * INIT LEANCLOUD
+ * 初始化云端数据库
+ */
+// ⚠️ 注意：MasterKey 千万不要在前端代码中使用，这里只用 AppID 和 AppKey
+const APP_ID = 'qEYwTkeThH7jmDC6mPx0hqHf-MdYXbMMI';
+const APP_KEY = 'UbfCwDa4EYvIZiSLzsjSKTjh';
+
+// 使用全局变量 AV (通过 HTML 引入的 SDK)
+AV.init({
+    appId: APP_ID,
+    appKey: APP_KEY,
+    serverURL: "https://qeywtket.api.lncldglobal.com" // 国际版默认 API 域名，通常根据 AppID 生成
+});
+
+/**
  * DATA MANAGER
- * 处理数据的存储和读取
+ * 处理云端数据的存储和读取
  */
 const DataManager = {
-    // 现在的博客数据将从 JSON 文件读取
     async getBlogs() {
         try {
-            // 添加时间戳防止缓存，确保读取最新数据
-            const response = await fetch(`data/posts.json?v=${new Date().getTime()}`);
-            if (!response.ok) throw new Error('Failed to load posts');
-            const data = await response.json();
-            return data;
+            const query = new AV.Query('Blog');
+            query.descending('createdAt'); // 按创建时间倒序（最新的在前面）
+            const results = await query.find();
+            
+            // 转换数据格式
+            return results.map(blog => ({
+                id: blog.id,
+                title: blog.get('title'),
+                content: blog.get('content'),
+                emoji: blog.get('emoji'),
+                // 格式化日期
+                date: blog.createdAt.toLocaleDateString('zh-CN', { 
+                    year: 'numeric', month: 'short', day: 'numeric' 
+                })
+            }));
         } catch (error) {
-            console.error('Error loading blogs:', error);
-            return []; // 如果加载失败，返回空数组
+            console.error('获取博客失败:', error);
+            // 这里我们不报错，返回空数组以免页面崩坏
+            return [];
         }
     },
 
-    // 以前是直接保存，现在我们只生成数据对象供用户复制
-    // 因为纯前端网页没有权限直接修改服务器上的文件（GitHub）
-    createBlogObject(title, content) {
-        const emojis = ['🎈', '✨', '🚀', '🌈', '🍦', '🍕', '🎮', '💡'];
+    async saveBlog(title, content) {
+        // 声明 class
+        const Blog = AV.Object.extend('Blog');
+        const blog = new Blog();
+        
+        // 随机 Emoji
+        const emojis = ['🎈', '✨', '🚀', '🌈', '🍦', '🍕', '🎮', '💡', '👻', '🥑'];
         const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
 
+        // 设置属性
+        blog.set('title', title);
+        blog.set('content', content);
+        blog.set('emoji', randomEmoji);
+
+        // 保存到云端
+        const savedBlog = await blog.save();
+        
         return {
-            id: Date.now(),
+            id: savedBlog.id,
             title: title,
-            date: new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' }),
+            content: content,
             emoji: randomEmoji,
-            content: content
+            date: new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' })
         };
+    },
+
+    async deleteBlog(id) {
+        // 创建一个不包含数据的对象，只用 id 来删除
+        const blog = AV.Object.createWithoutData('Blog', id);
+        await blog.destroy();
     }
 };
 
@@ -101,44 +143,30 @@ const UI = {
         const content = this.elements.contentInput.value.trim();
 
         if (!title || !content) {
-            alert('Oops! You forgot to write something! 😅');
+            alert('Oops! You forgot something! 😅');
             return;
         }
 
-        // 生成新博客数据
-        const newPost = DataManager.createBlogObject(title, content);
-        
-        // 格式化为 JSON 字符串
-        const jsonString = JSON.stringify(newPost, null, 4);
+        // 简单的防误触，防止游客乱发（虽然是前端验证，防君子不防小人）
+        // 实际使用如果想给自己用，可以把这里改成一个密码输入框
+        // const password = prompt("请输入发布密码:");
+        // if (password !== "zoe") return; 
 
-        // 复制到剪贴板
+        // 按钮变 loading 态
+        const originalText = this.elements.publishBtn.innerText;
+        this.elements.publishBtn.innerText = 'Publishing...';
+        this.elements.publishBtn.disabled = true;
+
         try {
-            await navigator.clipboard.writeText(jsonString + ",");
-            alert(`
-🎉 Awesome! Your post is ready!
-            
-Since this is a static site, I've copied the JSON data to your clipboard.
-            
-👉 Please paste it into 'data/posts.json' file to publish it permanently.
-(Just paste it at the top of the list!)
-            `);
-        } catch (err) {
-            console.error('Failed to copy: ', err);
-            alert('New post created! Please manually add it to data/posts.json');
-        }
-
-        // 暂时在界面上显示出来（刷新后会消失，直到你更新 json 文件）
-        this.previewNewPost(newPost);
-        this.toggleEditor(false);
-    },
-
-    previewNewPost(blog) {
-        const article = this.createBlogElement(blog);
-        // 插入到最前面
-        if (this.elements.blogList.firstChild) {
-            this.elements.blogList.insertBefore(article, this.elements.blogList.firstChild);
-        } else {
-            this.elements.blogList.appendChild(article);
+            await DataManager.saveBlog(title, content);
+            await this.renderBlogs(); // 重新拉取列表
+            this.toggleEditor(false);
+            alert('🎉 Published successfully!');
+        } catch (error) {
+            alert('Failed to publish: ' + error.message);
+        } finally {
+            this.elements.publishBtn.innerText = originalText;
+            this.elements.publishBtn.disabled = false;
         }
     },
 
@@ -162,25 +190,32 @@ Since this is a static site, I've copied the JSON data to your clipboard.
         }
 
         blogs.forEach(blog => {
-            const article = this.createBlogElement(blog);
+            const article = document.createElement('article');
+            article.className = 'blog-item';
+            
+            article.innerHTML = `
+                <h3>${blog.emoji} ${this.escapeHtml(blog.title)}</h3>
+                <span class="blog-date">${blog.date}</span>
+                <p class="blog-excerpt">${this.escapeHtml(blog.content)}</p>
+                <div class="delete-post" data-id="${blog.id}">🗑️</div>
+            `;
+            
+            // 绑定删除事件
+            article.querySelector('.delete-post').addEventListener('click', async (e) => {
+                if(confirm('Are you sure you want to delete this memory? 🥺')) {
+                    // 转圈圈提示
+                    e.target.innerText = '...';
+                    await DataManager.deleteBlog(blog.id);
+                    this.renderBlogs();
+                }
+            });
+
             container.appendChild(article);
         });
     },
 
-    createBlogElement(blog) {
-        const article = document.createElement('article');
-        article.className = 'blog-item';
-        const emoji = blog.emoji || '📝';
-        
-        article.innerHTML = `
-            <h3>${emoji} ${this.escapeHtml(blog.title)}</h3>
-            <span class="blog-date">${blog.date}</span>
-            <p class="blog-excerpt">${this.escapeHtml(blog.content)}</p>
-        `;
-        return article;
-    },
-
     escapeHtml(text) {
+        if (!text) return '';
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
