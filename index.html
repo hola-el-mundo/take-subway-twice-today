@@ -3,72 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的个人博客</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Zoe's Fun House! 🎈</title>
+    <!-- 引入有趣的圆润字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;500;700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1>我的个人博客</h1>
-            <p class="subtitle">记录生活，分享技术</p>
+    
+    <!-- 全屏主视觉区域 (Hero Section) -->
+    <main class="hero-section">
+        <div class="hero-content">
+            <div class="badge">👋 Hello there!</div>
+            <h1 class="hero-title">Hey, I'm <span class="highlight">Zoe!</span></h1>
+            <p class="hero-subtitle">Creating fun stuff & breaking things on web.</p>
+            <div class="social-links">
+                <a href="#" class="social-btn instagram">📸 Insta</a>
+                <a href="#" class="social-btn twitter">🐦 Twitter</a>
+                <a href="#" class="social-btn email">📧 Email</a>
+            </div>
         </div>
-    </header>
-
-    <nav>
-        <div class="container">
-            <ul>
-                <li><a href="#home">首页</a></li>
-                <li><a href="#about">关于我</a></li>
-                <li><a href="#blog">博客</a></li>
-                <li><a href="#contact">联系方式</a></li>
-            </ul>
-        </div>
-    </nav>
-
-    <main class="container">
-        <!-- 发布新博客区域 -->
-        <section id="write-blog" class="write-section">
-            <h2>✍️ 发布新博客</h2>
-            <div class="editor">
-                <input type="text" id="blog-title" placeholder="输入博客标题...">
-                <textarea id="blog-content" placeholder="写下你的想法..."></textarea>
-                <button id="publish-btn" onclick="publishBlog()">发布博客</button>
-            </div>
-        </section>
-
-        <!-- 博客列表区域 -->
-        <section id="blog-list" class="blog-section">
-            <h2>📝 最新文章</h2>
-            <div id="posts-container">
-                <!-- 博客文章将在这里动态显示 -->
-            </div>
-        </section>
-
-        <!-- 关于我区域 -->
-        <section id="about" class="about-section">
-            <h2>👋 关于我</h2>
-            <div class="about-content">
-                <p>欢迎来到我的个人博客！我是一个热爱分享的创作者。</p>
-                <p>在这里，我会分享我的想法、经验和学习心得。</p>
-            </div>
-        </section>
-
-        <!-- 联系方式 -->
-        <section id="contact" class="contact-section">
-            <h2>📫 联系我</h2>
-            <div class="contact-content">
-                <p>Email: your-email@example.com</p>
-                <p>GitHub: @yourusername</p>
-            </div>
-        </section>
+        
+        <!-- 背景装饰元素 (Blobs) -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="sticker sticker-1">✨</div>
+        <div class="sticker sticker-2">🚀</div>
     </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2026 我的个人博客. All rights reserved.</p>
-        </div>
-    </footer>
+    <!-- 侧边博客入口：像个扭蛋或者糖果 -->
+    <div class="corner-trigger" id="blog-toggle">
+        <span class="emoji">📖</span>
+        <span class="trigger-text">My Diary</span>
+    </div>
 
-    <script src="script.js"></script>
+    <!-- 隐藏的侧边博客面板 -->
+    <aside class="blog-panel" id="blog-panel">
+        <button class="close-btn" id="close-blog">✖️</button>
+        
+        <div class="blog-container">
+            <header class="blog-header">
+                <h2>📒 Little Notebook</h2>
+                <button id="new-post-btn" class="fun-btn">✍️ Write New</button>
+            </header>
+
+            <!-- 写作区域 -->
+            <div id="editor-area" class="editor-area hidden card-style">
+                <input type="text" id="blog-title" placeholder="Today's headlines..." class="fun-input">
+                <textarea id="blog-content" placeholder="What's happening? Tell me everything!" class="fun-textarea"></textarea>
+                <div class="editor-actions">
+                    <button id="publish-btn" class="action-btn primary">Post it!</button>
+                    <button id="cancel-btn" class="action-btn secondary">Nah</button>
+                </div>
+            </div>
+
+            <!-- 列表区域 -->
+            <div id="blog-list" class="blog-list">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+    </aside>
+
+    <!-- 遮罩层 -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- 脚本引入 -->
+    <script type="module" src="js/script.js"></script>
 </body>
 </html>
