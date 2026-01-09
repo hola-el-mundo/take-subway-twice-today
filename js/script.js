@@ -8,13 +8,32 @@ const API = {
         return res.ok ? res.json() : [];
     },
     async saveBlog(title, content) {
-        // No emojis, just pure content
-        const emoji = null; 
         await fetch('/api/blog', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ title, content, emoji })
+            body: JSON.stringify({ title, content, emoji: null })
         });
+    },
+
+    // --- Gallery (Mock or API if exists) ---
+    // If api/photos.js exists, use it. If not, we might need to handle it.
+    // Assuming api/photos.js was restored or exists.
+    async getPhotos() {
+        try {
+            const res = await fetch('/api/photos');
+            if(res.ok) return await res.json();
+        } catch(e) { console.error(e); }
+        return [];
+    },
+
+    async savePhoto(url, caption) {
+        try {
+            await fetch('/api/photos', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ url, caption })
+            });
+        } catch(e) { console.error(e); }
     },
 
     // --- Guestbook ---
@@ -47,14 +66,15 @@ const UI = {
     init() {
         this.bindNav();
         this.bindBlog();
+        this.bindGallery(); // New
         this.bindGuestbook();
         
         // Initial Loads
         this.renderBlogs();
+        this.renderGallery(); // New
         this.renderGuestbook();
         this.renderVisitors();
         
-        // Log visit
         API.logVisitor();
     },
 
@@ -64,11 +84,9 @@ const UI = {
 
         buttons.forEach(btn => {
             btn.addEventListener('click', () => {
-                // Remove active class
                 buttons.forEach(b => b.classList.remove('active'));
                 sections.forEach(s => s.classList.remove('active'));
 
-                // Add active class
                 btn.classList.add('active');
                 const targetId = btn.getAttribute('data-target');
                 document.getElementById(targetId).classList.add('active');
@@ -114,16 +132,68 @@ const UI = {
     async renderBlogs() {
         const container = document.getElementById('blog-list');
         if(!container) return;
-        container.innerHTML = 'Loading...';
         const blogs = await API.getBlogs();
         
-        container.innerHTML = blogs.map(blog => `
-            <article class="blog-item">
+        // Random slight rotation for sticky note feel
+        container.innerHTML = blogs.map(blog => {
+            const rot = (Math.random() * 2 - 1).toFixed(1); // -1 to 1 deg
+            return `
+            <article class="blog-item" style="transform: rotate(${rot}deg)">
                 <h3>${this.escape(blog.title)}</h3>
-                <span class="blog-date">${new Date(blog.created_at).toLocaleDateString()}</span>
+                <span style="font-family: var(--font-heading); color: #888;">${new Date(blog.created_at).toLocaleDateString()}</span>
                 <p>${this.escape(blog.content)}</p>
             </article>
-        `).join('') || '<p>The journal is empty.</p>';
+            `;
+        }).join('') || '<p style="font-family:var(--font-heading); font-size:1.5rem">No stories yet. Start writing!</p>';
+    },
+
+    // --- Gallery Logic (New) ---
+    bindGallery() {
+        const addBtn = document.getElementById('add-photo-btn');
+        const inputArea = document.getElementById('photo-input-area');
+        const cancelBtn = document.getElementById('cancel-photo-btn');
+        const saveBtn = document.getElementById('save-photo-btn');
+
+        if(addBtn) {
+            addBtn.addEventListener('click', () => {
+                inputArea.classList.toggle('hidden');
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                inputArea.classList.add('hidden');
+            });
+
+            saveBtn.addEventListener('click', async () => {
+                const url = document.getElementById('photo-url').value;
+                const caption = document.getElementById('photo-caption').value;
+                if(url) {
+                    saveBtn.innerText = 'Pinning...';
+                    await API.savePhoto(url, caption);
+                    saveBtn.innerText = 'Pin It';
+                    document.getElementById('photo-url').value = '';
+                    document.getElementById('photo-caption').value = '';
+                    inputArea.classList.add('hidden');
+                    this.renderGallery();
+                }
+            });
+        }
+    },
+
+    async renderGallery() {
+        const container = document.getElementById('gallery-grid');
+        if(!container) return;
+        const photos = await API.getPhotos();
+
+        container.innerHTML = photos.map(photo => {
+            // Random rotation for polaroid effect
+            const rot = (Math.random() * 10 - 5).toFixed(1); // -5 to 5 deg
+            return `
+            <div class="photo-card" style="--rotation: ${rot}deg">
+                <img src="${this.escape(photo.url)}" class="photo-img" onerror="this.src='https://via.placeholder.com/200?text=Error'">
+                <div class="photo-caption">${this.escape(photo.caption)}</div>
+            </div>
+            `;
+        }).join('');
     },
 
     // --- Guestbook Logic ---
@@ -135,9 +205,9 @@ const UI = {
                 const msg = document.getElementById('guest-msg').value;
                 
                 if(name && msg) {
-                    sendBtn.innerText = 'Sending...';
+                    sendBtn.innerText = 'Signing...';
                     await API.postMessage(name, msg);
-                    sendBtn.innerText = 'Send Message';
+                    sendBtn.innerText = 'Sign';
                     document.getElementById('guest-msg').value = '';
                     this.renderGuestbook();
                 }
@@ -153,9 +223,9 @@ const UI = {
         container.innerHTML = msgs.map(msg => `
             <div class="guest-msg">
                 <span class="guest-name">${this.escape(msg.nickname)}</span>
-                <p>${this.escape(msg.content)}</p>
+                <p style="font-family: 'Caveat'; font-size: 1.4rem;">${this.escape(msg.content)}</p>
             </div>
-        `).join('') || '<p>Be the first to say hi!</p>';
+        `).join('') || '<p>Be the first to sign!</p>';
     },
 
     // --- Visitors Logic ---
@@ -166,7 +236,7 @@ const UI = {
         
         list.innerHTML = visitors.map(v => `
             <tr>
-                <td>${v.ip_address}</td>
+                <td style="font-family: 'Courier New'">${v.ip_address}</td>
                 <td>${new Date(v.visited_at).toLocaleString()}</td>
                 <td style="font-size: 0.8em; color: #888;">${this.escape(v.user_agent ? v.user_agent.substring(0, 30) : 'Unknown')}...</td>
             </tr>
