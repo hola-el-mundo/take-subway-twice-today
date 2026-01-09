@@ -1,77 +1,64 @@
 /**
- * INIT LEANCLOUD
- * 初始化云端数据库
- */
-// ⚠️ 注意：MasterKey 千万不要在前端代码中使用，这里只用 AppID 和 AppKey
-const APP_ID = 'qEYwTkeThH7jmDC6mPx0hqHf-MdYXbMMI';
-const APP_KEY = 'UbfCwDa4EYvIZiSLzsjSKTjh';
-
-// 使用全局变量 AV (通过 HTML 引入的 SDK)
-AV.init({
-    appId: APP_ID,
-    appKey: APP_KEY,
-    serverURL: "https://qeywtket.api.lncldglobal.com" // 国际版默认 API 域名，通常根据 AppID 生成
-});
-
-/**
  * DATA MANAGER
- * 处理云端数据的存储和读取
+ * Call Serverless Functions in /api
  */
 const DataManager = {
     async getBlogs() {
         try {
-            const query = new AV.Query('Blog');
-            query.descending('createdAt'); // 按创建时间倒序（最新的在前面）
-            const results = await query.find();
+            const response = await fetch('/api/blog');
+            if (!response.ok) throw new Error('Network response was not ok');
+            const blogs = await response.json();
             
-            // 转换数据格式
-            return results.map(blog => ({
+            // Format for UI
+            return blogs.map(blog => ({
                 id: blog.id,
-                title: blog.get('title'),
-                content: blog.get('content'),
-                emoji: blog.get('emoji'),
-                // 格式化日期
-                date: blog.createdAt.toLocaleDateString('zh-CN', { 
+                title: blog.title,
+                content: blog.content,
+                emoji: blog.emoji,
+                // Convert timestamp to string
+                date: new Date(blog.created_at).toLocaleDateString('zh-CN', { 
                     year: 'numeric', month: 'short', day: 'numeric' 
                 })
             }));
         } catch (error) {
             console.error('获取博客失败:', error);
-            // 这里我们不报错，返回空数组以免页面崩坏
             return [];
         }
     },
 
     async saveBlog(title, content) {
-        // 声明 class
-        const Blog = AV.Object.extend('Blog');
-        const blog = new Blog();
-        
-        // 随机 Emoji
+        // Random Emoji
         const emojis = ['🎈', '✨', '🚀', '🌈', '🍦', '🍕', '🎮', '💡', '👻', '🥑'];
         const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
 
-        // 设置属性
-        blog.set('title', title);
-        blog.set('content', content);
-        blog.set('emoji', randomEmoji);
+        const response = await fetch('/api/blog', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                title: title,
+                content: content,
+                emoji: randomEmoji
+            })
+        });
 
-        // 保存到云端
-        const savedBlog = await blog.save();
-        
-        return {
-            id: savedBlog.id,
-            title: title,
-            content: content,
-            emoji: randomEmoji,
-            date: new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' })
-        };
+        if (!response.ok) {
+            throw new Error('Failed to save');
+        }
+
+        return true; 
     },
 
     async deleteBlog(id) {
-        // 创建一个不包含数据的对象，只用 id 来删除
-        const blog = AV.Object.createWithoutData('Blog', id);
-        await blog.destroy();
+        // Use query params for delete
+        const response = await fetch(`/api/blog?id=${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to delete');
+        }
     }
 };
 
