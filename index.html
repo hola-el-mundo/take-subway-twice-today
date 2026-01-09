@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的个人博客</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>我的个人博客</h1>
+            <p class="subtitle">记录生活，分享技术</p>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="#home">首页</a></li>
+                <li><a href="#about">关于我</a></li>
+                <li><a href="#blog">博客</a></li>
+                <li><a href="#contact">联系方式</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- 发布新博客区域 -->
+        <section id="write-blog" class="write-section">
+            <h2>✍️ 发布新博客</h2>
+            <div class="editor">
+                <input type="text" id="blog-title" placeholder="输入博客标题...">
+                <textarea id="blog-content" placeholder="写下你的想法..."></textarea>
+                <button id="publish-btn" onclick="publishBlog()">发布博客</button>
+            </div>
+        </section>
+
+        <!-- 博客列表区域 -->
+        <section id="blog-list" class="blog-section">
+            <h2>📝 最新文章</h2>
+            <div id="posts-container">
+                <!-- 博客文章将在这里动态显示 -->
+            </div>
+        </section>
+
+        <!-- 关于我区域 -->
+        <section id="about" class="about-section">
+            <h2>👋 关于我</h2>
+            <div class="about-content">
+                <p>欢迎来到我的个人博客！我是一个热爱分享的创作者。</p>
+                <p>在这里，我会分享我的想法、经验和学习心得。</p>
+            </div>
+        </section>
+
+        <!-- 联系方式 -->
+        <section id="contact" class="contact-section">
+            <h2>📫 联系我</h2>
+            <div class="contact-content">
+                <p>Email: your-email@example.com</p>
+                <p>GitHub: @yourusername</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 我的个人博客. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
