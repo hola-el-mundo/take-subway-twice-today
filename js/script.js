@@ -8,8 +8,8 @@ const API = {
         return res.ok ? res.json() : [];
     },
     async saveBlog(title, content) {
-        const emojis = ['🎈', '✨', '🚀', '🌈', '🍦', '🍕'];
-        const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+        // No emojis, just pure content
+        const emoji = null; 
         await fetch('/api/blog', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -119,11 +119,11 @@ const UI = {
         
         container.innerHTML = blogs.map(blog => `
             <article class="blog-item">
-                <h3>${blog.emoji || '📝'} ${this.escape(blog.title)}</h3>
+                <h3>${this.escape(blog.title)}</h3>
                 <span class="blog-date">${new Date(blog.created_at).toLocaleDateString()}</span>
                 <p>${this.escape(blog.content)}</p>
             </article>
-        `).join('') || '<p>No stories yet.</p>';
+        `).join('') || '<p>The journal is empty.</p>';
     },
 
     // --- Guestbook Logic ---
