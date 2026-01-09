@@ -1,10 +1,12 @@
-import { sql } from '@vercel/postgres';
+import { neon } from '@neondatabase/serverless';
 
 export default async function handler(request, response) {
   try {
+    const sql = neon(process.env.DATABASE_URL);
+
     // GET: 获取所有博客
     if (request.method === 'GET') {
-      const { rows } = await sql`SELECT * FROM Blogs ORDER BY created_at DESC;`;
+      const rows = await sql`SELECT * FROM Blogs ORDER BY created_at DESC;`;
       return response.status(200).json(rows);
     } 
     
@@ -21,7 +23,6 @@ export default async function handler(request, response) {
     
     // DELETE: 删除博客
     else if (request.method === 'DELETE') {
-      // 从 URL 参数中获取 id (例如 /api/blog?id=123)
       const { id } = request.query;
       if (!id) {
         return response.status(400).json({ error: 'ID is required' });

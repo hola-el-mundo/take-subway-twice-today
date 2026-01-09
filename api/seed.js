@@ -1,13 +1,10 @@
-import { sql } from '@vercel/postgres';
+import { neon } from '@neondatabase/serverless';
 
 export default async function handler(request, response) {
   try {
+    const sql = neon(process.env.DATABASE_URL);
+    
     // 创建博客表
-    // id: 自增主键
-    // title: 标题
-    // content: 内容
-    // emoji: 表情符号
-    // created_at: 创建时间，默认为当前时间
     const result = await sql`
       CREATE TABLE IF NOT EXISTS Blogs (
         id SERIAL PRIMARY KEY,
