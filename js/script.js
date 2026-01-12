@@ -232,14 +232,26 @@ const UI = {
     async renderVisitors() {
         const list = document.getElementById('visitors-list');
         if(!list) return;
-        const visitors = await API.getVisitors();
+        
+        let visitors = [];
+        try {
+            visitors = await API.getVisitors();
+        } catch (e) {
+            console.error("Failed to load visitors", e);
+        }
+        
+        if (!visitors || visitors.length === 0) {
+            list.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 20px;">暂无数据 或 需要运行 <a href="/api/seed" target="_blank">数据库迁移</a></td></tr>`;
+            return;
+        }
         
         list.innerHTML = visitors.map(v => {
-            // Mask IP
-            const ipParts = (v.ip_address || '').split('.');
-            const maskedIP = ipParts.length === 4 
-                ? `${ipParts[0]}.${ipParts[1]}.*.*` 
-                : (v.ip_address || 'Unknown');
+            // Unmask IP (User requested to see full IP)
+            // const ipParts = (v.ip_address || '').split('.');
+            // const maskedIP = ipParts.length === 4 
+            //    ? `${ipParts[0]}.${ipParts[1]}.*.*` 
+            //    : (v.ip_address || 'Unknown');
+            const displayIP = v.ip_address || 'Unknown';
 
             // Location
             let location = 'Unknown Place';
@@ -261,7 +273,7 @@ const UI = {
             <tr>
                 <td>
                     <div style="font-family: 'Caveat', cursive; font-size: 1.1rem; color: #2c3e50;">${this.escape(location)}</div>
-                    <div style="font-family: monospace; font-size: 0.75rem; color: #95a5a6;">${maskedIP}</div>
+                    <div style="font-family: monospace; font-size: 0.75rem; color: #95a5a6;">${displayIP}</div>
                 </td>
                 <td style="font-size: 0.9rem;">${new Date(v.visited_at).toLocaleString()}</td>
                 <td style="font-size: 0.9rem;">${device}</td>
