@@ -31,9 +31,19 @@ export default async function handler(request, response) {
         id SERIAL PRIMARY KEY,
         ip_address VARCHAR(50) NOT NULL,
         user_agent TEXT,
+        country VARCHAR(100),
+        city VARCHAR(100),
         visited_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
+
+    // Migration helper: Add columns if they don't exist (for existing tables)
+    try {
+        await sql`ALTER TABLE Visitors ADD COLUMN IF NOT EXISTS country VARCHAR(100)`;
+        await sql`ALTER TABLE Visitors ADD COLUMN IF NOT EXISTS city VARCHAR(100)`;
+    } catch (e) {
+        console.log("Migration note: Columns may already exist or another error occurred during migration check.");
+    }
 
     return response.status(200).json({ message: "All tables created successfully" });
   } catch (error) {

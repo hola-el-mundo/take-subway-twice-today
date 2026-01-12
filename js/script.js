@@ -234,13 +234,40 @@ const UI = {
         if(!list) return;
         const visitors = await API.getVisitors();
         
-        list.innerHTML = visitors.map(v => `
+        list.innerHTML = visitors.map(v => {
+            // Mask IP
+            const ipParts = (v.ip_address || '').split('.');
+            const maskedIP = ipParts.length === 4 
+                ? `${ipParts[0]}.${ipParts[1]}.*.*` 
+                : (v.ip_address || 'Unknown');
+
+            // Location
+            let location = 'Unknown Place';
+            // Prefer City, Country
+            if (v.city && v.country) location = `${v.city}, ${v.country}`;
+            else if (v.country) location = v.country;
+            else if (v.city) location = v.city;
+            
+            // User Friendly Device Name
+            const ua = (v.user_agent || '').toLowerCase();
+            let device = 'Unknown';
+            if(ua.includes('windows')) device = 'Windows PC';
+            else if(ua.includes('mac os')) device = 'Mac';
+            else if(ua.includes('android')) device = 'Android';
+            else if(ua.includes('iphone') || ua.includes('ipad')) device = 'iOS';
+            else if(ua.includes('linux')) device = 'Linux';
+
+            return `
             <tr>
-                <td style="font-family: 'Courier New'">${v.ip_address}</td>
-                <td>${new Date(v.visited_at).toLocaleString()}</td>
-                <td style="font-size: 0.8em; color: #888;">${this.escape(v.user_agent ? v.user_agent.substring(0, 30) : 'Unknown')}...</td>
+                <td>
+                    <div style="font-family: 'Caveat', cursive; font-size: 1.1rem; color: #2c3e50;">${this.escape(location)}</div>
+                    <div style="font-family: monospace; font-size: 0.75rem; color: #95a5a6;">${maskedIP}</div>
+                </td>
+                <td style="font-size: 0.9rem;">${new Date(v.visited_at).toLocaleString()}</td>
+                <td style="font-size: 0.9rem;">${device}</td>
             </tr>
-        `).join('');
+            `;
+        }).join('');
     },
 
     escape(str) {

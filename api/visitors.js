@@ -18,9 +18,15 @@ export default async function handler(request, response) {
       const forwarded = request.headers['x-forwarded-for'];
       const ip = forwarded ? forwarded.split(',')[0] : (request.socket.remoteAddress || 'Unknown');
       const userAgent = request.headers['user-agent'] || 'Unknown';
+      
+      // Attempt to get location from Vercel headers
+      const country = request.headers['x-vercel-ip-country'] || null;
+      // City might be URI encoded
+      const rawCity = request.headers['x-vercel-ip-city'];
+      const city = rawCity ? decodeURIComponent(rawCity) : null;
 
-      await sql`INSERT INTO Visitors (ip_address, user_agent) VALUES (${ip}, ${userAgent})`;
-      return response.status(201).json({ message: 'Visitor logged', ip });
+      await sql`INSERT INTO Visitors (ip_address, user_agent, country, city) VALUES (${ip}, ${userAgent}, ${country}, ${city})`;
+      return response.status(201).json({ message: 'Visitor logged', ip, city, country });
     } catch (error) {
       return response.status(500).json({ error: error.message });
     }
